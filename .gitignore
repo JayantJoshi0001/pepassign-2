@@ -1,0 +1,116 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs_vista.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Node modules
+node_modules/
+
+# Next.js / frontend build
+.next/
+out/
+.next/cache/
+
+# Vercel / deployment
+.vercel/
+.vercel_build_output/
+
+# Build outputs
+dist/
+build/
+coverage/
+coverage/*
+*.lcov
+
+# TypeScript
+*.tsbuildinfo
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Editor directories and files
+.vscode/
+*.code-workspace
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS junk
+*.swp
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.pyo
+*.pyd
+*.so
+.Python
+
+# Packaging / distribution
+build/
+dist/
+*.egg-info/
+pip-wheel-metadata/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+.python-version
+
+# Project-specific Python venv
+/python-service/.venv/
+
+# Testing / tooling caches
+.pytest_cache/
+.tox/
+.mypy_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Misc caches
+.cache/
+.parcel-cache/
+.next/
+
+# Certificates / keys
+*.pem
+*.key
+*.crt
+
+# Misc
+*.log.*
+
+/frontend/.next/
+/backend/dist/
+/backend/data/
+
+/frontend/next-env.d.ts
+
+# Ignore node package lock backups sometimes created by package managers
+package-lock.json.tmp
+
+# Docker
+docker-compose.override.yml
+.envrc
+
+.DS_Store
+
+!important.env
