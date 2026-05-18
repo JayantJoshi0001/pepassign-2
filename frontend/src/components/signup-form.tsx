@@ -5,6 +5,13 @@ import { useRouter } from 'next/navigation';
 
 import { apiPost } from '@/lib/api';
 
+import { z } from 'zod';
+
+const signupSchema = z.object({
+  username: z.string().min(3, 'Username must be at least 3 characters'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
 export function SignupForm() {
   const router = useRouter();
   const [username, setUsername] = useState('');
@@ -15,6 +22,13 @@ export function SignupForm() {
   async function handleSignup(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError('');
+
+    const result = signupSchema.safeParse({ username, password });
+    if (!result.success) {
+      setError(result.error.issues[0].message);
+      return;
+    }
+
     setLoading(true);
 
     try {

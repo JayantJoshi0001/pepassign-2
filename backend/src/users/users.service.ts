@@ -1,68 +1,55 @@
-import { ConflictException, Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { DatabaseSync } from 'node:sqlite';
-import { mkdirSync } from 'node:fs';
-import { dirname, isAbsolute, resolve } from 'node:path';
+import { ConflictException, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 
+import { User } from './schemas/user.schema';
+
 export interface UserRecord {
-  id: number;
+  id: string;
   username: string;
   passwordHash: string;
-  createdAt: string;
+  createdAt: Date;
 }
 
 @Injectable()
-export class UsersService implements OnModuleInit, OnModuleDestroy {
-  private readonly database: DatabaseSync;
+export class UsersService {
+  constructor(
+    @InjectModel(User.name) private readonly userModel: Model<User>,
+  ) {}
 
-  constructor(private readonly configService: ConfigService) {
-    const databasePath = this.resolveDatabasePath();
-    mkdirSync(dirname(databasePath), { recursive: true });
-    this.database = new DatabaseSync(databasePath);
-  }
-
-  onModuleInit(): void {
-    this.database.exec(`
-      CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT NOT NULL UNIQUE,
-        passwordHash TEXT NOT NULL,
-        createdAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-  }
-
-  onModuleDestroy(): void {
-    this.database.close();
-  }
-
-  createUser(username: string, password: string): UserRecord {
-    if (this.findByUsername(username)) {
+  async createUser(username: string, password: string): Promise<UserRecord> {
+    const existingUser = await this.findByUsername(username);
+    if (existingUser) {
       throw new ConflictException('Username already exists.');
     }
 
     const passwordHash = this.hashPassword(password);
-    const insertStatement = this.database.prepare(
-      'INSERT INTO users (username, passwordHash) VALUES (?, ?)',
-    );
-    insertStatement.run(username, passwordHash);
-
-    const createdUser = this.findByUsername(username);
-
-    if (!createdUser) {
+    
+    try {
+      const createdUser = await this.userModel.create({ username, passwordHash });
+      return {
+        id: createdUser._id.toString(),
+        username: createdUser.username,
+        passwordHash: createdUser.passwordHash,
+        createdAt: (createdUser as any).createdAt,
+      };
+    } catch (error) {
       throw new ConflictException('Unable to create user.');
     }
-
-    return createdUser;
   }
 
-  findByUsername(username: string): UserRecord | undefined {
-    const query = this.database.prepare(
-      'SELECT id, username, passwordHash, createdAt FROM users WHERE username = ?',
-    );
-
-    return query.get(username) as UserRecord | undefined;
+  async findByUsername(username: string): Promise<UserRecord | undefined> {
+    const user = await this.userModel.findOne({ username }).exec();
+    if (!user) {
+      return undefined;
+    }
+    return {
+      id: user._id.toString(),
+      username: user.username,
+      passwordHash: user.passwordHash,
+      createdAt: (user as any).createdAt,
+    };
   }
 
   verifyPassword(password: string, passwordHash: string): boolean {
@@ -82,12 +69,5 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
     const salt = randomBytes(16).toString('hex');
     const derivedHash = scryptSync(password, salt, 64).toString('hex');
     return `${salt}:${derivedHash}`;
-  }
-
-  private resolveDatabasePath(): string {
-    const configuredPath = this.configService.get<string>('DATABASE_PATH') ?? './data/auth.db';
-    return isAbsolute(configuredPath)
-      ? configuredPath
-      : resolve(process.cwd(), configuredPath);
   }
 }

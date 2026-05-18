@@ -13,8 +13,8 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  login(credentials: LoginDto): LoginResponseDto {
-    const user = this.usersService.findByUsername(credentials.username);
+  async login(credentials: LoginDto): Promise<LoginResponseDto> {
+    const user = await this.usersService.findByUsername(credentials.username);
 
     if (!user || !this.usersService.verifyPassword(credentials.password, user.passwordHash)) {
       throw new UnauthorizedException('Invalid username or password.');
@@ -28,8 +28,8 @@ export class AuthService {
     };
   }
 
-  register(credentials: RegisterDto): LoginResponseDto {
-    const createdUser = this.usersService.createUser(
+  async register(credentials: RegisterDto): Promise<LoginResponseDto> {
+    const createdUser = await this.usersService.createUser(
       credentials.username,
       credentials.password,
     );
