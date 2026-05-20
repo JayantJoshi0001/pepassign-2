@@ -11,6 +11,8 @@ interface LoginRequestBody {
 interface BackendLoginResponse {
   accessToken: string;
   username: string;
+  email: string;
+  onboardingComplete: boolean;
 }
 
 export async function POST(request: Request) {
@@ -34,7 +36,12 @@ export async function POST(request: Request) {
     .json()
     .catch(() => ({}))) as Partial<BackendLoginResponse> & { message?: string };
 
-  if (!backendResponse.ok || !responseBody.accessToken || !responseBody.username) {
+  if (
+    !backendResponse.ok ||
+    !responseBody.accessToken ||
+    !responseBody.username ||
+    !responseBody.email
+  ) {
     return NextResponse.json(
       { message: responseBody.message ?? 'Invalid username or password.' },
       { status: backendResponse.status || 401 },
@@ -57,5 +64,9 @@ export async function POST(request: Request) {
     path: '/',
   });
 
-  return NextResponse.json({ username: responseBody.username });
+  return NextResponse.json({
+    username: responseBody.username,
+    email: responseBody.email,
+    onboardingComplete: responseBody.onboardingComplete,
+  });
 }

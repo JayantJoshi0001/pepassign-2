@@ -11,10 +11,13 @@ export class PythonService {
   ) {}
 
   async talk(text: string): Promise<string> {
-    const pythonServiceUrl = this.configService.get<string>('PYTHON_SERVICE_URL');
+    const pythonServiceUrl =
+      this.configService.get<string>('PYTHON_SERVICE_URL');
 
     if (!pythonServiceUrl) {
-      throw new ServiceUnavailableException('PYTHON_SERVICE_URL is not configured.');
+      throw new ServiceUnavailableException(
+        'PYTHON_SERVICE_URL is not configured.',
+      );
     }
 
     const endpoint = `${pythonServiceUrl}/message`;

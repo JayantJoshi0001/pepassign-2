@@ -16,29 +16,33 @@ export class AuthService {
   async login(credentials: LoginDto): Promise<LoginResponseDto> {
     const user = await this.usersService.findByUsername(credentials.username);
 
-    if (!user || !this.usersService.verifyPassword(credentials.password, user.passwordHash)) {
+    if (
+      !user ||
+      !this.usersService.verifyPassword(credentials.password, user.passwordHash)
+    ) {
       throw new UnauthorizedException('Invalid username or password.');
     }
 
-    const accessToken = this.jwtService.sign({ sub: user.username });
+    const accessToken = this.jwtService.sign({ sub: user.id });
 
     return {
       accessToken,
       username: user.username,
+      email: user.email,
+      onboardingComplete: user.onboardingComplete,
     };
   }
 
   async register(credentials: RegisterDto): Promise<LoginResponseDto> {
-    const createdUser = await this.usersService.createUser(
-      credentials.username,
-      credentials.password,
-    );
+    const createdUser = await this.usersService.createUser(credentials);
 
-    const accessToken = this.jwtService.sign({ sub: createdUser.username });
+    const accessToken = this.jwtService.sign({ sub: createdUser.id });
 
     return {
       accessToken,
       username: createdUser.username,
+      email: createdUser.email,
+      onboardingComplete: createdUser.onboardingComplete,
     };
   }
 }

@@ -23,11 +23,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  validate(payload: JwtPayload): { username: string } {
+  validate(payload: JwtPayload): { userId: string } {
     if (!payload?.sub) {
       throw new UnauthorizedException('Invalid token payload.');
     }
 
-    return { username: payload.sub };
+    return { userId: payload.sub };
   }
 }

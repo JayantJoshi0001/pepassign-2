@@ -1,9 +1,12 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { apiPost } from '@/lib/api';
+
+import { ProductManager } from './product-manager';
 
 interface DashboardClientProps {
   username: string;
@@ -44,16 +47,24 @@ export function DashboardClient({ username }: DashboardClientProps) {
   }
 
   return (
-    <section className="w-full max-w-3xl rounded-2xl border border-cyan-100 bg-white/90 p-6 shadow-xl backdrop-blur-sm">
+    <section className="w-full max-w-5xl space-y-8 rounded-2xl border border-cyan-100 bg-white/90 p-6 shadow-xl backdrop-blur-sm">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-semibold text-slate-900">Welcome, {username}</h1>
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
-        >
-          Logout
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/products"
+            className="rounded-lg border border-cyan-200 px-4 py-2 text-sm font-medium text-cyan-700 transition hover:bg-cyan-50"
+          >
+            View products
+          </Link>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
       <p className="mt-3 text-slate-600">
@@ -116,6 +127,10 @@ export function DashboardClient({ username }: DashboardClientProps) {
           <p className="mt-1 text-sm text-emerald-700">{message}</p>
         </div>
       ) : null}
+
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <ProductManager compact />
+      </div>
 
       {/* Inline input replaces modal to avoid overlay/backdrop */}
     </section>

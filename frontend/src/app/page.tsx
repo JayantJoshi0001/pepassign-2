@@ -22,12 +22,12 @@ export default async function LoginPage() {
               Pepagora Assignment 2
             </p>
             <h1 className="mt-4 text-4xl font-semibold leading-tight text-slate-900">
-              Secure Login to
-              <span className="block text-cyan-700">Next.js + NestJS + FastAPI</span>
+              Secure login for
+              <span className="block text-cyan-700">your business dashboard</span>
             </h1>
             <p className="mt-4 text-slate-600">
-              Sign in to open your protected dashboard and send messages through
-              the backend-to-python communication chain.
+              Sign in to continue onboarding, manage products, and talk to the backend Python
+              service.
             </p>
           </div>
 

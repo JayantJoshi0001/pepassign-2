@@ -1,5 +1,6 @@
 'use client';
 
+import type { FormEvent } from 'react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -19,7 +20,7 @@ export function LoginForm() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  async function handleLogin(event: React.FormEvent<HTMLFormElement>) {
+  async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError('');
     
@@ -32,8 +33,12 @@ export function LoginForm() {
     setLoading(true);
 
     try {
-      await apiPost<{ username: string }>('/api/auth/login', { username, password });
-      router.push('/dashboard');
+      const response = await apiPost<{
+        username: string;
+        email: string;
+        onboardingComplete: boolean;
+      }>('/api/auth/login', { username, password });
+      router.push(response.onboardingComplete ? '/dashboard' : '/signup/business');
       router.refresh();
     } catch (requestError) {
       setError(

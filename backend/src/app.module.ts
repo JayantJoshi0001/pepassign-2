@@ -6,6 +6,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { PythonModule } from './python/python.module';
+import { ProductsModule } from './products/products.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { PythonModule } from './python/python.module';
       inject: [ConfigService],
     }),
     AuthModule,
+    UsersModule,
+    ProductsModule,
     PythonModule,
   ],
   controllers: [AppController],
