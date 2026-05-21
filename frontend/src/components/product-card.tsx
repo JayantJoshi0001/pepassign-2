@@ -15,7 +15,7 @@ export function ProductCard({ product, actions }: ProductCardProps) {
 
   return (
     <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
-      <div className="h-44 bg-gradient-to-br from-cyan-100 via-white to-emerald-100">
+      <div className="h-44">
         {product.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img

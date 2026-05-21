@@ -281,8 +281,8 @@ export function BusinessProfileForm({
         {logoError ? <p className="text-sm text-rose-600">{logoError}</p> : null}
 
         {values.logo ? (
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div className="border-b border-slate-100 px-4 py-3 text-sm font-medium text-slate-700">
+          <div className="overflow-hidden rounded-2xl border-none bg-white">
+            <div className="border-none py-3 text-sm font-medium text-slate-700">
               Logo preview
             </div>
             <div className="flex items-center gap-4 p-4">

@@ -51,12 +51,6 @@ export function DashboardClient({ username }: DashboardClientProps) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-semibold text-slate-900">Welcome, {username}</h1>
         <div className="flex flex-wrap gap-2">
-          <Link
-            href="/products"
-            className="rounded-lg border border-cyan-200 px-4 py-2 text-sm font-medium text-cyan-700 transition hover:bg-cyan-50"
-          >
-            View products
-          </Link>
           <button
             type="button"
             onClick={handleLogout}
@@ -128,7 +122,7 @@ export function DashboardClient({ username }: DashboardClientProps) {
         </div>
       ) : null}
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-2xl ">
         <ProductManager compact />
       </div>
 

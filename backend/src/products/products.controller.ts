@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+/* eslint-disable @typescript-eslint/no-base-to-string */
+/* eslint-disable prettier/prettier */
 import {
   Body,
   Controller,
@@ -46,6 +49,13 @@ export class ProductsController {
     @Body() body: UpdateProductDto,
   ) {
     return this.productsService.updateProduct(request.user.userId, id, body);
+  }
+
+  @Get(':id')
+  async findOne(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
+    // eslint-disable-next-line prettier/prettier
+    console.log(request);
+    return this.productsService.findProductByUser(request.user.userId, id);
   }
 
   @Delete(':id')

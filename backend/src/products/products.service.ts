@@ -92,6 +92,20 @@ export class ProductsService {
     return { success: true };
   }
 
+  async findProductByUser(userId: string, productId: string): Promise<ProductRecord> {
+    console.log(`Finding product with ID ${productId} for user ${userId}`);
+    const product = await this.productModel
+      .findOne({ _id: productId, ownerUserId: userId })
+      .exec();
+
+    if (!product) {
+      throw new NotFoundException('Product not found.');
+    }
+
+    const ownerBusinessName = await this.getOwnerBusinessName(userId);
+    return this.toProductRecord(product, ownerBusinessName);
+  }
+
   private async getOwnerBusinessName(userId: string): Promise<string> {
     const user = await this.usersService.findById(userId);
 
