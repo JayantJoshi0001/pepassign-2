@@ -6,8 +6,6 @@ import { useRouter } from 'next/navigation';
 
 import { apiPost } from '@/lib/api';
 
-import { ProductManager } from './product-manager';
-
 interface DashboardClientProps {
   username: string;
 }
@@ -65,6 +63,15 @@ export function DashboardClient({ username }: DashboardClientProps) {
         This dashboard calls the backend only. The backend then talks to the Python service.
       </p>
 
+      <div className="flex flex-wrap gap-3 pt-2">
+        <Link
+          href="/products"
+          className="rounded-xl bg-cyan-600 px-5 py-3 text-sm font-semibold text-white shadow transition hover:bg-cyan-700"
+        >
+          Manage products
+        </Link>
+      </div>
+
       <button
         type="button"
         onClick={() => setModalOpen((s) => !s)}
@@ -121,10 +128,6 @@ export function DashboardClient({ username }: DashboardClientProps) {
           <p className="mt-1 text-sm text-emerald-700">{message}</p>
         </div>
       ) : null}
-
-      <div className="rounded-2xl ">
-        <ProductManager compact />
-      </div>
 
       {/* Inline input replaces modal to avoid overlay/backdrop */}
     </section>

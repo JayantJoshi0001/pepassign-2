@@ -31,6 +31,32 @@ export async function PATCH(request: Request, { params }: RouteParams) {
   }
 }
 
+export async function GET(_request: Request, { params }: RouteParams) {
+  try {
+    const { id } = await params;
+    const { response, data } = await proxyJsonToBackend(`/products/${id}`, {
+      method: 'GET',
+    });
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { message: data.message ?? 'Unable to load product details.' },
+        { status: response.status || 404 },
+      );
+    }
+
+    return NextResponse.json(data);
+  } catch (error) {
+    return NextResponse.json(
+      {
+        message:
+          error instanceof Error ? error.message : 'Unable to load product details.',
+      },
+      { status: 400 },
+    );
+  }
+}
+
 export async function DELETE(_request: Request, { params }: RouteParams) {
   try {
     const { id } = await params;

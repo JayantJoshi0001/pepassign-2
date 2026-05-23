@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { AUTH_COOKIE_NAME } from '@/lib/constants';
+import { getBackendBaseUrl } from '@/lib/server-api';
 import type { ProductRecord } from '@/lib/products';
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -20,7 +21,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   let error: string | null = null;
 
   try {
-    const response = await fetch(`http://localhost:3001/products/${id}`, {
+    const response = await fetch(`${getBackendBaseUrl()}/products/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

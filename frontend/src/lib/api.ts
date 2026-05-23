@@ -42,6 +42,16 @@ export async function apiPatch<TResponse>(
   });
 }
 
+export async function apiPut<TResponse>(
+  url: string,
+  body: object,
+): Promise<TResponse> {
+  return apiRequest<TResponse>(url, {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  });
+}
+
 export async function apiDelete<TResponse>(url: string): Promise<TResponse> {
   return apiRequest<TResponse>(url, {
     method: 'DELETE',

@@ -1,7 +1,7 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { apiPost } from '@/lib/api';
@@ -16,6 +16,8 @@ const signupSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
+const SIGNUP_DRAFT_KEY = 'pepassign.signup.draft';
+
 export function SignupForm() {
   const router = useRouter();
   const [username, setUsername] = useState('');
@@ -23,6 +25,91 @@ export function SignupForm() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      const storedDraft = window.localStorage.getItem(SIGNUP_DRAFT_KEY);
+
+      if (storedDraft) {
+        try {
+          const parsedDraft = JSON.parse(storedDraft) as {
+            username?: string;
+            email?: string;
+            password?: string;
+          };
+
+          setUsername(parsedDraft.username ?? '');
+          setEmail(parsedDraft.email ?? '');
+          setPassword(parsedDraft.password ?? '');
+        } catch {
+          window.localStorage.removeItem(SIGNUP_DRAFT_KEY);
+        }
+      }
+
+      setHydrated(true);
+    }, 0);
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key !== SIGNUP_DRAFT_KEY) {
+        return;
+      }
+
+      if (!event.newValue) {
+        setUsername('');
+        setEmail('');
+        setPassword('');
+        return;
+      }
+
+      try {
+        const parsedDraft = JSON.parse(event.newValue) as {
+          username?: string;
+          email?: string;
+          password?: string;
+        };
+
+        setUsername(parsedDraft.username ?? '');
+        setEmail(parsedDraft.email ?? '');
+        setPassword(parsedDraft.password ?? '');
+      } catch {
+        window.localStorage.removeItem(SIGNUP_DRAFT_KEY);
+      }
+    };
+
+    window.addEventListener('storage', handleStorage);
+
+    return () => {
+      window.clearTimeout(timeout);
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) {
+      return;
+    }
+
+    const hasDraft = [username, email, password].some((value) => value.trim().length > 0);
+
+    const timeout = window.setTimeout(() => {
+      if (!hasDraft) {
+        window.localStorage.removeItem(SIGNUP_DRAFT_KEY);
+        return;
+      }
+
+      window.localStorage.setItem(
+        SIGNUP_DRAFT_KEY,
+        JSON.stringify({ username, email, password }),
+      );
+    }, 1500);
+
+    return () => window.clearTimeout(timeout);
+  }, [email, hydrated, password, username]);
+
+  function clearDraft() {
+    window.localStorage.removeItem(SIGNUP_DRAFT_KEY);
+  }
 
   async function handleSignup(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -42,6 +129,7 @@ export function SignupForm() {
         email: string;
         onboardingComplete: boolean;
       }>('/api/auth/register', { username, email, password });
+      clearDraft();
       router.push(response.onboardingComplete ? '/dashboard' : '/signup/business');
       router.refresh();
     } catch (requestError) {

@@ -6,6 +6,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
+import { ProductDraftsService } from '../product-drafts/product-drafts.service';
 import { UsersService } from '../users/users.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -30,6 +31,7 @@ export class ProductsService {
   constructor(
     @InjectModel(Product.name) private readonly productModel: Model<Product>,
     private readonly usersService: UsersService,
+    private readonly productDraftsService: ProductDraftsService,
   ) {}
 
   async createProduct(
@@ -41,6 +43,8 @@ export class ProductsService {
       ...payload,
       ownerUserId: userId,
     });
+
+    await this.productDraftsService.clearDraft(userId, 'create');
 
     return this.toProductRecord(product, ownerBusinessName);
   }
@@ -73,6 +77,8 @@ export class ProductsService {
     Object.assign(product, payload);
     await product.save();
 
+    await this.productDraftsService.clearDraft(userId, 'edit', productId);
+
     const ownerBusinessName = await this.getOwnerBusinessName(userId);
     return this.toProductRecord(product, ownerBusinessName);
   }
@@ -89,11 +95,15 @@ export class ProductsService {
       throw new NotFoundException('Product not found.');
     }
 
+    await this.productDraftsService.clearDraft(userId, 'edit', productId);
+
     return { success: true };
   }
 
-  async findProductByUser(userId: string, productId: string): Promise<ProductRecord> {
-    console.log(`Finding product with ID ${productId} for user ${userId}`);
+  async findProductByUser(
+    userId: string,
+    productId: string,
+  ): Promise<ProductRecord> {
     const product = await this.productModel
       .findOne({ _id: productId, ownerUserId: userId })
       .exec();
