@@ -11,6 +11,10 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
+interface EnhanceImageDto {
+  imageSource: string;
+}
+
 @Controller('python')
 export class PythonController {
   constructor(private readonly pythonService: PythonService) {}
@@ -27,5 +31,15 @@ export class PythonController {
       username: request.user.username,
       response,
     };
+  }
+
+  @Post('enhance-image')
+  @UseGuards(JwtAuthGuard)
+  async enhanceImage(
+    @Body() payload: EnhanceImageDto,
+  ): Promise<{ enhancedImage: string }> {
+    const enhancedImage = await this.pythonService.enhanceImage(payload.imageSource);
+
+    return { enhancedImage };
   }
 }

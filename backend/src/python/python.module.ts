@@ -8,5 +8,6 @@ import { PythonService } from './python.service';
   imports: [HttpModule],
   controllers: [PythonController],
   providers: [PythonService],
+  exports: [PythonService],
 })
 export class PythonModule {}

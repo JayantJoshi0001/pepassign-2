@@ -50,6 +50,8 @@ interface ProductFormProps {
   onSubmit: (event: FormEvent<HTMLFormElement>) => void | Promise<void>;
   submitLabel: string;
   loading?: boolean;
+  enhancingImage?: boolean;
+  onEnhancingImageChange?: (value: boolean) => void;
   onCancel?: () => void;
   cancelLabel?: string;
 }
@@ -60,6 +62,8 @@ export function ProductForm({
   onSubmit,
   submitLabel,
   loading = false,
+  enhancingImage = false,
+  onEnhancingImageChange,
   onCancel,
   cancelLabel = 'Cancel',
 }: ProductFormProps) {
@@ -71,6 +75,7 @@ export function ProductForm({
     if (!file) {
       setImageError('');
       onChange({ ...values, imageUrl: '' });
+      onEnhancingImageChange?.(false);
       return;
     }
 
@@ -88,11 +93,33 @@ export function ProductForm({
 
     try {
       const dataUrl = await fileToDataUrl(file);
-      setImageError('');
       onChange({ ...values, imageUrl: dataUrl });
+      onEnhancingImageChange?.(true);
+
+      const response = await fetch('/api/python/enhance-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ imageSource: dataUrl }),
+      });
+
+      const responseBody = (await response.json().catch(() => ({}))) as {
+        enhancedImage?: string;
+        message?: string;
+      };
+
+      if (response.ok && responseBody.enhancedImage) {
+        setImageError('');
+        onChange({ ...values, imageUrl: responseBody.enhancedImage });
+      } else {
+        setImageError(responseBody.message ?? 'Unable to enhance the selected image.');
+      }
     } catch (error) {
       setImageError(error instanceof Error ? error.message : 'Unable to load the selected image.');
       event.target.value = '';
+    } finally {
+      onEnhancingImageChange?.(false);
     }
   }
 
@@ -178,6 +205,10 @@ export function ProductForm({
 
         {imageError ? <p className="text-sm text-rose-600">{imageError}</p> : null}
 
+        {enhancingImage ? (
+          <p className="text-sm text-cyan-700">Enhancing image preview...</p>
+        ) : null}
+
         {values.imageUrl ? (
           <div className="overflow-hidden rounded-2xl border-none bg-white">
             <div className="border-none py-3 text-sm font-medium text-slate-700">
@@ -192,7 +223,7 @@ export function ProductForm({
               />
               <div className="space-y-1 text-sm text-slate-600">
                 <p className="font-medium text-slate-900">Preview ready</p>
-                <p>The uploaded image is stored as a base64 data URL before submission.</p>
+                <p>The preview shows the enhanced image that will be saved.</p>
               </div>
             </div>
           </div>

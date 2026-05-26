@@ -63,22 +63,22 @@ export function DashboardClient({ username }: DashboardClientProps) {
         This dashboard calls the backend only. The backend then talks to the Python service.
       </p>
 
-      <div className="flex flex-wrap gap-3 pt-2">
+      <div className="flex flex-row items-end gap-4">
         <Link
           href="/products"
           className="rounded-xl bg-cyan-600 px-5 py-3 text-sm font-semibold text-white shadow transition hover:bg-cyan-700"
         >
           Manage products
         </Link>
-      </div>
 
-      <button
-        type="button"
-        onClick={() => setModalOpen((s) => !s)}
-        className="mt-6 rounded-xl bg-cyan-600 px-5 py-3 text-sm font-semibold text-white shadow transition hover:bg-cyan-700"
-      >
-        Talk with me python
-      </button>
+        <button
+          type="button"
+          onClick={() => setModalOpen((s) => !s)}
+          className="mt-6 rounded-xl bg-cyan-600 px-5 py-3 text-sm font-semibold text-white shadow transition hover:bg-cyan-700"
+        >
+          Talk with me python
+        </button>
+      </div>
 
       {modalOpen ? (
         <form

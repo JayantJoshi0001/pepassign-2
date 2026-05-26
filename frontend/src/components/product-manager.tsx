@@ -48,6 +48,7 @@ export function ProductManager() {
   const [formValues, setFormValues] = useState<ProductFormValues>(emptyProductFormValues);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [formVisible, setFormVisible] = useState(false);
+  const [enhancingImage, setEnhancingImage] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [draftLoading, setDraftLoading] = useState(false);
@@ -93,6 +94,7 @@ export function ProductManager() {
     setFormValues(emptyProductFormValues);
     setFormVisible(false);
     setClearedEmptyCreateDraft(false);
+    setEnhancingImage(false);
   }
 
   async function openCreateForm() {
@@ -394,6 +396,8 @@ export function ProductManager() {
                 onSubmit={handleSubmit}
                 submitLabel={editingProductId ? 'Update product' : 'Add product'}
                 loading={saving}
+                enhancingImage={enhancingImage}
+                onEnhancingImageChange={setEnhancingImage}
                 onCancel={closeForm}
               />
             </div>

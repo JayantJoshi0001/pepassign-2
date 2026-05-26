@@ -104,6 +104,10 @@ htmlcov/
 
 /frontend/next-env.d.ts
 
+/python-service/.venv/
+/python-service/app/models/
+/python-service/gfpgan/
+
 # Ignore node package lock backups sometimes created by package managers
 package-lock.json.tmp
 
