@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { PythonModule } from './python/python.module';
 import { ProductsModule } from './products/products.module';
 import { UsersModule } from './users/users.module';
+import { ConversationsModule } from './conversations/conversations.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { UsersModule } from './users/users.module';
     AuthModule,
     UsersModule,
     ProductsModule,
+    ConversationsModule,
     PythonModule,
   ],
   controllers: [AppController],

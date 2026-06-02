@@ -101,6 +101,7 @@ htmlcov/
 /frontend/.next/
 /backend/dist/
 /backend/data/
+/backend/uploads/
 
 /frontend/next-env.d.ts
 

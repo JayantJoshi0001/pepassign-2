@@ -43,12 +43,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <div className="rounded-3xl border border-cyan-100 bg-white/90 p-6 shadow-xl backdrop-blur-sm">
             <h1 className="text-4xl font-semibold text-slate-900">Product not found</h1>
             <p className="mt-3 text-slate-600">{error}</p>
-            <Link
-              href="/dashboard"
-              className="mt-6 inline-block rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan-700"
-            >
-              Back to dashboard
-            </Link>
+           
           </div>
         </section>
       </main>
@@ -58,15 +53,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   return (
     <main className="relative min-h-screen overflow-hidden bg-slate-50 px-4 py-10">
       <section className="mx-auto w-full max-w-5xl space-y-6">
-        <div>
-          <Link
-            href="/dashboard"
-            className="text-sm font-semibold text-cyan-600 transition hover:text-cyan-700"
-          >
-            ← Back to dashboard
-          </Link>
-        </div>
-
+       
         <div className="space-y-6 rounded-3xl border border-cyan-100 bg-white/90 p-6 shadow-xl backdrop-blur-sm">
           <div className="grid gap-6 md:grid-cols-2">
             {/* Product Image */}

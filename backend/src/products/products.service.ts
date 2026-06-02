@@ -31,6 +31,25 @@ export interface ProductRecord {
   updatedAt: Date;
 }
 
+function getObjectIdString(value: unknown): string {
+  if (!value) {
+    return '';
+  }
+
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  if (typeof value === 'object' && value !== null) {
+    const maybeId = (value as { _id?: { toString?: () => string } })._id;
+    if (maybeId && typeof maybeId.toString === 'function') {
+      return maybeId.toString();
+    }
+  }
+
+  return value.toString();
+}
+
 @Injectable()
 export class ProductsService {
   private readonly logger = new Logger(ProductsService.name);
@@ -75,6 +94,33 @@ export class ProductsService {
     return products.map((product) =>
       this.toProductRecord(product, ownerBusinessName),
     );
+  }
+
+  async findMarketplaceProducts(category?: string): Promise<ProductRecord[]> {
+    const query = category?.trim()
+      ? { category: new RegExp(`^${category.trim()}$`, 'i') }
+      : {};
+
+    const products = await this.productModel
+      .find(query)
+      .sort({ createdAt: -1 })
+      .populate('ownerUserId')
+      .exec();
+
+    return products.map((product) => {
+      const owner = product.ownerUserId as unknown as {
+        _id?: unknown;
+        businessProfile?: { businessName?: string };
+      };
+
+      return {
+        ...this.toProductRecord(
+          product,
+          owner.businessProfile?.businessName ?? 'Unknown seller',
+        ),
+        ownerUserId: getObjectIdString(owner._id ?? product.ownerUserId),
+      };
+    });
   }
 
   async updateProduct(
@@ -248,7 +294,7 @@ export class ProductsService {
       category: product.category,
       imageUrl: product.imageUrl,
       stockQuantity: product.stockQuantity,
-      ownerUserId: product.ownerUserId.toString(),
+      ownerUserId: getObjectIdString(product.ownerUserId),
       ownerBusinessName,
       createdAt: (product as unknown as { createdAt: Date }).createdAt,
       updatedAt: (product as unknown as { updatedAt: Date }).updatedAt,

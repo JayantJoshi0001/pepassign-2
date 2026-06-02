@@ -16,7 +16,10 @@ async function apiRequest<TResponse>(
   };
 
   if (!response.ok) {
-    throw new Error(data.message ?? 'Request failed.');
+    // prefer explicit message from server, else include status and body for debugging
+    const serverMsg = data?.message ?? null;
+    const bodyPreview = serverMsg ? serverMsg : JSON.stringify(data);
+    throw new Error(`Request failed: ${response.status} ${response.statusText} - ${bodyPreview}`);
   }
 
   return data;

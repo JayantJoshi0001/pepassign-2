@@ -78,6 +78,20 @@ export function DashboardClient({ username }: DashboardClientProps) {
         >
           Talk with me python
         </button>
+        
+        <Link
+          href="/chat"
+          className="rounded-xl bg-cyan-600 px-5 py-3 text-sm font-semibold text-white shadow transition hover:bg-cyan-700"
+        >
+          Chat with buyers/sellers
+        </Link>
+
+        <Link
+          href="/marketplace"
+          className="rounded-xl bg-cyan-600 px-5 py-3 text-sm font-semibold text-white shadow transition hover:bg-cyan-700"
+        >
+          Marketplace
+        </Link>
       </div>
 
       {modalOpen ? (
