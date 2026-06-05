@@ -3,7 +3,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { ProductDraftsController } from './product-drafts.controller';
 import { ProductDraftsService } from './product-drafts.service';
-import { ProductDraft, ProductDraftSchema } from './schemas/product-draft.schema';
+import {
+  ProductDraft,
+  ProductDraftSchema,
+} from './schemas/product-draft.schema';
 
 @Module({
   imports: [

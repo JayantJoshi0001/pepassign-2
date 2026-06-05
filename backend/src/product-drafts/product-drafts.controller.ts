@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, Put, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Put,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ProductDraftQueryDto } from './dto/product-draft-query.dto';
@@ -17,7 +26,10 @@ export class ProductDraftsController {
   constructor(private readonly productDraftsService: ProductDraftsService) {}
 
   @Get('me')
-  async getDraft(@Req() request: AuthenticatedRequest, @Query() query: ProductDraftQueryDto) {
+  async getDraft(
+    @Req() request: AuthenticatedRequest,
+    @Query() query: ProductDraftQueryDto,
+  ) {
     return this.productDraftsService.findDraft(
       request.user.userId,
       query.scope ?? 'create',
@@ -34,7 +46,10 @@ export class ProductDraftsController {
   }
 
   @Delete('me')
-  async clearDraft(@Req() request: AuthenticatedRequest, @Query() query: ProductDraftQueryDto) {
+  async clearDraft(
+    @Req() request: AuthenticatedRequest,
+    @Query() query: ProductDraftQueryDto,
+  ) {
     return this.productDraftsService.clearDraft(
       request.user.userId,
       query.scope ?? 'create',

@@ -54,7 +54,11 @@ export class ConversationsController {
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/messages')
-  async sendMessage(@Request() req: any, @Param('id') id: string, @Body() body: SendMessageDto) {
+  async sendMessage(
+    @Request() req: any,
+    @Param('id') id: string,
+    @Body() body: SendMessageDto,
+  ) {
     const userId = req.user.userId as string;
     // ensure senderId matches authenticated user
     if (body.senderId !== userId) {
@@ -68,7 +72,7 @@ export class ConversationsController {
   @Get(':id/messages')
   async getMessages(@Request() req: any, @Param('id') id: string) {
     // Read query params from the request object
-    const query = (req as any).query ?? {};
+    const query = req.query ?? {};
     const before = query.before ? new Date(query.before as string) : undefined;
     const limit = query.limit ? parseInt(query.limit as string, 10) : 50;
 
@@ -103,9 +107,9 @@ export class ConversationsController {
           'text/csv',
         ];
         if (!allowed.includes(file.mimetype)) {
-          return cb(new BadRequestException('Invalid file type'), false as any);
+          return cb(new BadRequestException('Invalid file type'), false);
         }
-        cb(null, true as any);
+        cb(null, true);
       },
     }),
   )
@@ -131,10 +135,17 @@ export class ConversationsController {
 
   @UseGuards(JwtAuthGuard)
   @Get('files/:name')
-  async serveFile(@Request() req: any, @Param('name') name: string, @Res() res: Response) {
+  async serveFile(
+    @Request() req: any,
+    @Param('name') name: string,
+    @Res() res: Response,
+  ) {
     // ensure requester is a participant of the conversation referencing this file
     const userId = req.user.userId as string;
-    const hasAccess = await this.conversationsService.userHasAccessToFile(userId, name);
+    const hasAccess = await this.conversationsService.userHasAccessToFile(
+      userId,
+      name,
+    );
     if (!hasAccess) {
       return res.status(403).send('Forbidden');
     }

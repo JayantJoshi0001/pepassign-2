@@ -38,7 +38,9 @@ export class PythonController {
   async enhanceImage(
     @Body() payload: EnhanceImageDto,
   ): Promise<{ enhancedImage: string }> {
-    const enhancedImage = await this.pythonService.enhanceImage(payload.imageSource);
+    const enhancedImage = await this.pythonService.enhanceImage(
+      payload.imageSource,
+    );
 
     return { enhancedImage };
   }

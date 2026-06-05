@@ -10,4 +10,5 @@ export class ConversationArchive extends Document {
   messages!: any[];
 }
 
-export const ConversationArchiveSchema = SchemaFactory.createForClass(ConversationArchive);
+export const ConversationArchiveSchema =
+  SchemaFactory.createForClass(ConversationArchive);

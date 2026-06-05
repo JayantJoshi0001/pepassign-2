@@ -24,7 +24,8 @@ export class ProductDraftData {
   stockQuantity?: string;
 }
 
-export const ProductDraftDataSchema = SchemaFactory.createForClass(ProductDraftData);
+export const ProductDraftDataSchema =
+  SchemaFactory.createForClass(ProductDraftData);
 
 @Schema({ timestamps: true })
 export class ProductDraft extends Document {

@@ -160,6 +160,44 @@ export class UsersService {
     return this.toUserRecord(user);
   }
 
+  async searchSuppliers(
+    searchRegex: RegExp,
+  ): Promise<
+    Array<{
+      id: string;
+      businessName: string;
+      businessDescription?: string;
+      businessCategory?: string[];
+      city?: string;
+      country?: string;
+      logo?: string;
+      contactNumber?: string;
+    }>
+  > {
+    const users = await this.userModel
+      .find({
+        onboardingComplete: true,
+        $or: [
+          { 'businessProfile.businessName': searchRegex },
+          { 'businessProfile.businessDescription': searchRegex },
+        ],
+      })
+      .exec();
+
+    return users
+      .filter((user) => user.businessProfile)
+      .map((user) => ({
+        id: user._id.toString(),
+        businessName: user.businessProfile!.businessName,
+        businessDescription: user.businessProfile?.businessDescription,
+        businessCategory: user.businessProfile?.businessCategory,
+        city: user.businessProfile?.businessAddress?.city,
+        country: user.businessProfile?.businessAddress?.country,
+        logo: user.businessProfile?.logo,
+        contactNumber: user.businessProfile?.contactNumber,
+      }));
+  }
+
   verifyPassword(password: string, passwordHash: string): boolean {
     const [salt, derivedHash] = passwordHash.split(':');
 

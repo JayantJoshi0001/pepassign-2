@@ -1,6 +1,13 @@
 import { UseGuards, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { WebSocketGateway, OnGatewayInit, SubscribeMessage, MessageBody, ConnectedSocket, WebSocketServer } from '@nestjs/websockets';
+import {
+  WebSocketGateway,
+  OnGatewayInit,
+  SubscribeMessage,
+  MessageBody,
+  ConnectedSocket,
+  WebSocketServer,
+} from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
 import { ConversationsService } from './conversations.service';
@@ -16,7 +23,10 @@ export class ConversationsGateway implements OnGatewayInit {
 
   private readonly logger = new Logger(ConversationsGateway.name);
 
-  constructor(private readonly jwtService: JwtService, private readonly conversationsService: ConversationsService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly conversationsService: ConversationsService,
+  ) {}
 
   afterInit(server: Server) {
     this.logger.log('ConversationsGateway initialized');
@@ -26,8 +36,12 @@ export class ConversationsGateway implements OnGatewayInit {
     try {
       let token = client.handshake.auth?.token as string | undefined;
       // fallback: read token from cookie header (Next.js sets httpOnly cookie)
-      if (!token && client.handshake.headers && client.handshake.headers.cookie) {
-        const cookie = client.handshake.headers.cookie as string;
+      if (
+        !token &&
+        client.handshake.headers &&
+        client.handshake.headers.cookie
+      ) {
+        const cookie = client.handshake.headers.cookie;
         const match = cookie.match(/pepassign_access_token=([^;\s]+)/);
         if (match) token = decodeURIComponent(match[1]);
       }
@@ -52,7 +66,10 @@ export class ConversationsGateway implements OnGatewayInit {
   }
 
   @SubscribeMessage('join:conversation')
-  async onJoinConversation(@MessageBody() payload: { conversationId: string }, @ConnectedSocket() client: Socket) {
+  async onJoinConversation(
+    @MessageBody() payload: { conversationId: string },
+    @ConnectedSocket() client: Socket,
+  ) {
     const userId = (client as any).userId as string | undefined;
     if (!userId) return;
     const room = `conversation:${payload.conversationId}`;
@@ -61,13 +78,19 @@ export class ConversationsGateway implements OnGatewayInit {
   }
 
   @SubscribeMessage('leave:conversation')
-  async onLeaveConversation(@MessageBody() payload: { conversationId: string }, @ConnectedSocket() client: Socket) {
+  async onLeaveConversation(
+    @MessageBody() payload: { conversationId: string },
+    @ConnectedSocket() client: Socket,
+  ) {
     const room = `conversation:${payload.conversationId}`;
     client.leave(room);
   }
 
   @SubscribeMessage('message:create')
-  async onMessageCreate(@MessageBody() payload: any, @ConnectedSocket() client: Socket) {
+  async onMessageCreate(
+    @MessageBody() payload: any,
+    @ConnectedSocket() client: Socket,
+  ) {
     const userId = (client as any).userId as string | undefined;
     if (!userId) return;
 
@@ -84,12 +107,21 @@ export class ConversationsGateway implements OnGatewayInit {
 
     const room = `conversation:${conversationId}`;
     // broadcast to room
-    this.server.to(room).emit('message:created', { conversationId, message: saved });
+    this.server
+      .to(room)
+      .emit('message:created', { conversationId, message: saved });
   }
 
   @SubscribeMessage('typing')
-  onTyping(@MessageBody() payload: { conversationId: string; typing: boolean }, @ConnectedSocket() client: Socket) {
+  onTyping(
+    @MessageBody() payload: { conversationId: string; typing: boolean },
+    @ConnectedSocket() client: Socket,
+  ) {
     const room = `conversation:${payload.conversationId}`;
-    this.server.to(room).emit('typing', { conversationId: payload.conversationId, typing: payload.typing, userId: (client as any).userId });
+    this.server.to(room).emit('typing', {
+      conversationId: payload.conversationId,
+      typing: payload.typing,
+      userId: (client as any).userId,
+    });
   }
 }

@@ -2,8 +2,14 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 
-import { Conversation, ConversationSchema } from './schemas/conversation.schema';
-import { ConversationArchive, ConversationArchiveSchema } from './schemas/conversation-archive.schema';
+import {
+  Conversation,
+  ConversationSchema,
+} from './schemas/conversation.schema';
+import {
+  ConversationArchive,
+  ConversationArchiveSchema,
+} from './schemas/conversation-archive.schema';
 import { ConversationsService } from './conversations.service';
 import { ConversationsController } from './conversations.controller';
 import { ConversationsGateway } from './conversations.gateway';

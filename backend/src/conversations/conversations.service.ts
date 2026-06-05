@@ -2,7 +2,10 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
-import { Conversation, ConversationDocument } from './schemas/conversation.schema';
+import {
+  Conversation,
+  ConversationDocument,
+} from './schemas/conversation.schema';
 import { ConversationArchive } from './schemas/conversation-archive.schema';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { SendMessageDto } from './dto/send-message.dto';
@@ -94,12 +97,10 @@ export class ConversationsService {
     // Use aggregation to unwind messages and return paginated results
     const matchStage: any = { _id: new Types.ObjectId(conversationId) };
 
-    const pipeline: any[] = [
-      { $match: matchStage },
-      { $unwind: '$messages' },
-    ];
+    const pipeline: any[] = [{ $match: matchStage }, { $unwind: '$messages' }];
 
-    if (before) pipeline.push({ $match: { 'messages.timestamp': { $lt: before } } });
+    if (before)
+      pipeline.push({ $match: { 'messages.timestamp': { $lt: before } } });
 
     pipeline.push({ $sort: { 'messages.timestamp': -1 } });
     pipeline.push({ $limit: limit });
@@ -177,7 +178,8 @@ export class ConversationsService {
 
       const lastMessageAt = lastMsg?.timestamp ?? updatedAt ?? undefined;
 
-      const productName = (conv.productId && (conv.productId as any).productName) || undefined;
+      const productName =
+        (conv.productId && (conv.productId as any).productName) || undefined;
 
       return {
         _id: conv._id,
@@ -195,7 +197,9 @@ export class ConversationsService {
     if (!conv) throw new NotFoundException('Conversation not found.');
 
     const objUser = new Types.ObjectId(userId);
-    const isParticipant = (conv.participants ?? []).some((p: any) => p.equals(objUser));
+    const isParticipant = (conv.participants ?? []).some((p: any) =>
+      p.equals(objUser),
+    );
     if (!isParticipant) throw new NotFoundException('Conversation not found.');
 
     // remove conversation and any archives

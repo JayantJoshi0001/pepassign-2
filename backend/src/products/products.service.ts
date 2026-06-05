@@ -47,7 +47,32 @@ function getObjectIdString(value: unknown): string {
     }
   }
 
-  return value.toString();
+  return String(value);
+}
+
+function getProductRecordId(product: Product): string {
+  const candidateId = getObjectIdString(
+    (product as unknown as { _id?: unknown })._id ??
+      (product as unknown as { id?: unknown }).id,
+  );
+
+  if (candidateId) {
+    return candidateId;
+  }
+
+  const fallbackParts = [
+    product.productName?.trim(),
+    String(product.price),
+    String(product.stockQuantity),
+    String((product as unknown as { createdAt?: Date }).createdAt ?? ''),
+  ].filter(Boolean);
+
+  return fallbackParts.join('-') || `product-${Math.random().toString(36).slice(2)}`;
+}
+
+function escapeRegExp(value: string): string {
+  // Escape user input so it can be safely used in a RegExp
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 @Injectable()
@@ -96,10 +121,45 @@ export class ProductsService {
     );
   }
 
-  async findMarketplaceProducts(category?: string): Promise<ProductRecord[]> {
-    const query = category?.trim()
-      ? { category: new RegExp(`^${category.trim()}$`, 'i') }
-      : {};
+  async findMarketplaceProducts(
+    options?: {
+      category?: string;
+      minPrice?: string;
+      maxPrice?: string;
+      brand?: string;
+      city?: string;
+      country?: string;
+      minQuantity?: string;
+      maxQuantity?: string;
+    },
+  ): Promise<ProductRecord[]> {
+    const category = options?.category;
+    const minPrice = options?.minPrice ? Number(options.minPrice) : undefined;
+    const maxPrice = options?.maxPrice ? Number(options.maxPrice) : undefined;
+    const minQuantity = options?.minQuantity
+      ? Number(options.minQuantity)
+      : undefined;
+    const maxQuantity = options?.maxQuantity
+      ? Number(options.maxQuantity)
+      : undefined;
+
+    const query: Record<string, any> = {};
+
+    if (category?.trim()) {
+      query.category = new RegExp(`^${escapeRegExp(category.trim())}$`, 'i');
+    }
+
+    if (typeof minPrice !== 'undefined' || typeof maxPrice !== 'undefined') {
+      query.price = {} as Record<string, number>;
+      if (typeof minPrice !== 'undefined') query.price.$gte = minPrice;
+      if (typeof maxPrice !== 'undefined') query.price.$lte = maxPrice;
+    }
+
+    if (typeof minQuantity !== 'undefined' || typeof maxQuantity !== 'undefined') {
+      query.stockQuantity = {} as Record<string, number>;
+      if (typeof minQuantity !== 'undefined') query.stockQuantity.$gte = minQuantity;
+      if (typeof maxQuantity !== 'undefined') query.stockQuantity.$lte = maxQuantity;
+    }
 
     const products = await this.productModel
       .find(query)
@@ -107,20 +167,58 @@ export class ProductsService {
       .populate('ownerUserId')
       .exec();
 
-    return products.map((product) => {
-      const owner = product.ownerUserId as unknown as {
-        _id?: unknown;
-        businessProfile?: { businessName?: string };
-      };
+    // Filter by owner fields (brand/businessName, city, country) in-memory
+    const brandFilter = options?.brand?.trim();
+    const cityFilter = options?.city?.trim();
+    const countryFilter = options?.country?.trim();
 
-      return {
-        ...this.toProductRecord(
-          product,
-          owner.businessProfile?.businessName ?? 'Unknown seller',
-        ),
-        ownerUserId: getObjectIdString(owner._id ?? product.ownerUserId),
-      };
-    });
+    return products
+      .filter((product) => {
+        const owner = product.ownerUserId as unknown as {
+          _id?: unknown;
+          businessProfile?: {
+            businessName?: string;
+            businessAddress?: { city?: string; country?: string };
+          };
+        };
+
+        if (brandFilter) {
+          const name = owner.businessProfile?.businessName ?? '';
+          if (!new RegExp(`^${escapeRegExp(brandFilter)}$`, 'i').test(name)) {
+            return false;
+          }
+        }
+
+        if (cityFilter) {
+          const city = owner.businessProfile?.businessAddress?.city ?? '';
+          if (!new RegExp(`^${escapeRegExp(cityFilter)}$`, 'i').test(city)) {
+            return false;
+          }
+        }
+
+        if (countryFilter) {
+          const country = owner.businessProfile?.businessAddress?.country ?? '';
+          if (!new RegExp(`^${escapeRegExp(countryFilter)}$`, 'i').test(country)) {
+            return false;
+          }
+        }
+
+        return true;
+      })
+      .map((product) => {
+        const owner = product.ownerUserId as unknown as {
+          _id?: unknown;
+          businessProfile?: { businessName?: string };
+        };
+
+        return {
+          ...this.toProductRecord(
+            product,
+            owner.businessProfile?.businessName ?? 'Unknown seller',
+          ),
+          ownerUserId: getObjectIdString(owner._id ?? product.ownerUserId),
+        };
+      });
   }
 
   async updateProduct(
@@ -282,12 +380,82 @@ export class ProductsService {
     return `data:${mimeType};base64,${imageBuffer.toString('base64')}`;
   }
 
+  async search(
+    query: string | undefined,
+  ): Promise<{
+    products: ProductRecord[];
+    suppliers: Array<{
+      id: string;
+      businessName: string;
+      businessDescription?: string;
+      businessCategory?: string[];
+      city?: string;
+      country?: string;
+      logo?: string;
+      contactNumber?: string;
+    }>;
+  }> {
+    const searchResults = {
+      products: [] as ProductRecord[],
+      suppliers: [] as Array<{
+        id: string;
+        businessName: string;
+        businessDescription?: string;
+        businessCategory?: string[];
+        city?: string;
+        country?: string;
+        logo?: string;
+        contactNumber?: string;
+      }>,
+    };
+
+    if (!query || query.trim().length === 0) {
+      return searchResults;
+    }
+
+    const escapedQuery = escapeRegExp(query.trim());
+    const searchRegex = new RegExp(escapedQuery, 'i');
+
+    // Search products by name and description
+    const products = await this.productModel
+      .find({
+        $or: [
+          { productName: searchRegex },
+          { productDescription: searchRegex },
+        ],
+      })
+      .sort({ createdAt: -1 })
+      .populate('ownerUserId')
+      .exec();
+
+    searchResults.products = products.map((product) => {
+      const owner = product.ownerUserId as unknown as {
+        _id?: unknown;
+        businessProfile?: { businessName?: string };
+      };
+
+      return {
+        ...this.toProductRecord(
+          product,
+          owner.businessProfile?.businessName ?? 'Unknown seller',
+        ),
+        ownerUserId: getObjectIdString(owner._id ?? product.ownerUserId),
+      };
+    });
+
+    // Search suppliers by business name and description
+    const users = await this.usersService.searchSuppliers(searchRegex);
+    searchResults.suppliers = users;
+
+    return searchResults;
+  }
+
   private toProductRecord(
     product: Product,
     ownerBusinessName: string,
   ): ProductRecord {
     return {
-      id: product._id.toString(),
+      id: getProductRecordId(product),
       productName: product.productName,
       productDescription: product.productDescription,
       price: product.price,
